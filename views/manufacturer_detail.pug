@@ -1,0 +1,19 @@
+extends layout
+
+block content
+
+  h1 Manufacturer: #{manufacturer.name}
+  h3 Country: #{manufacturer.origin}
+
+  div(style='margin-left:20px;margin-top:20px')
+
+    h4 Cars
+
+    dl
+      each car in manufacturer_cars
+        dt
+          a(href=car.url) #{car.name}
+        dd #{car.body_style.type}
+
+      else
+        p This manufacturer has no cars.
