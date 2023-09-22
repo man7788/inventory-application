@@ -1,14 +1,51 @@
-const CarInstanceInstance = require("../models/carInstance");
+const CarInstance = require("../models/carInstance");
 const asyncHandler = require("express-async-handler");
 
 // Display list of all carinstance.
 exports.carinstance_list = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance list");
+  const allCarInstances = await CarInstance.find()
+    .populate({
+      path: "car",
+      populate: {
+        path: "manufacturer",
+      },
+    })
+    .exec();
+
+  res.render("carinstance_list", {
+    title: "Car Instance List",
+    carinstance_list: allCarInstances,
+  });
 });
 
 // Display detail page for a specific carinstance.
 exports.carinstance_detail = asyncHandler(async (req, res, next) => {
-  res.send(`NOT IMPLEMENTED: CarInstance detail: ${req.params.id}`);
+  const carInstance = await CarInstance.findById(req.params.id)
+    .populate({
+      path: "car",
+      populate: {
+        path: "manufacturer",
+      },
+    })
+    .populate({
+      path: "car",
+      populate: {
+        path: "body_style",
+      },
+    })
+    .exec();
+
+  if (carInstance === null) {
+    // No results.
+    const err = new Error("Specific car not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("carinstance_detail", {
+    title: "Car Instance Detail",
+    carinstance: carInstance,
+  });
 });
 
 // Display carinstance create form on GET.

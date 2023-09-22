@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1= title
+
+  ul
+    each val in carinstance_list
+      li
+        a(href=val.url) #{val.car.name}
+        span  (#{val.car.manufacturer.name}) 
+        span - (#{val.production_date_formatted}) 
+        if val.sold_date==undefined
+          span.text-success Available
+        if val.sold_date!=undefined
+          span  (Sold: #{val.sold_date_formatted})
+
+    else
+      li There are no book cars in this library.

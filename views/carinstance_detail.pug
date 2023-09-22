@@ -1,0 +1,20 @@
+extends layout
+
+block content
+
+  h1 ID: #{carinstance._id}
+
+  p #[strong Car: ]
+    a(href=carinstance.car.url) #{carinstance.car.name}
+  p #[strong Manufacturer:] 
+    a(href=carinstance.car.manufacturer.url) #{carinstance.car.manufacturer.name}
+  p #[strong Body Style:] 
+    a(href=carinstance.car.body_style.url) #{carinstance.car.body_style.type}  
+  p #[strong Production Date:] #{carinstance.production_date_formatted}
+
+
+  p #[strong Status: ]
+    if carinstance.sold_date==undefined
+      span.text-success Available
+    else
+      span  Sold - #{carinstance.sold_date_formatted}
