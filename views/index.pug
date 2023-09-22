@@ -2,4 +2,15 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  p Welcome to #[em Car Inventory]
+
+  h1 Dynamic content
+
+  p The inventory has the following record counts:
+
+  ul
+    li #[strong Type of Cars:] !{car_count}
+    li #[strong Cars in stock:] !{car_instance_count}
+    li #[strong Cars Available:] !{car_instance_available_count}
+    li #[strong Manufacturers:] !{manufacturer_count}
+    li #[strong Body Styles:] !{bodystyle_count}
