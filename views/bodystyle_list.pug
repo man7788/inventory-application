@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1= title
+
+  ul
+    each bodystyle in bodystyle_list
+      li
+        a(href=bodystyle.url) #{bodystyle.type}
+
+    else
+      li There are no bodystyles.

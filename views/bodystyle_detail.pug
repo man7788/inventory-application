@@ -1,0 +1,18 @@
+extends layout
+
+block content
+
+  h1 Body Style: #{bodystyle.type}
+
+  div(style='margin-left:20px;margin-top:20px')
+
+    h4 Cars
+
+    dl
+      each car in bodystyle_cars
+        dt
+          a(href=car.url) #{car.name}
+        dd #{car.manufacturer.name}
+
+      else
+        p This body style has no cars.
