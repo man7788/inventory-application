@@ -1,0 +1,29 @@
+extends layout
+
+block content
+  h1 Car: #{car.name}
+
+  p #[strong Manufacturer: ]
+    a(href=car.manufacturer.url) #{car.manufacturer.name}
+  p #[strong Price:] $#{car.price}
+  p #[strong Body Style:]  
+    a(href=car.body_style.url) #{car.body_style.type}
+
+
+  div(style='margin-left:20px;margin-top:20px')
+    h4 Stock
+
+    each val in car_instances
+      hr
+      if val.sold_date==undefined
+        p.text-success Available
+      else 
+        p.text-danger Sold
+      p #[strong Production Date:] #{val.production_date_formatted}
+      if val.sold_date!==undefined
+        p #[strong Sold Date:] #{val.sold_date_formatted}
+      p #[strong Id: ]
+        a(href=val.url) #{val._id}
+
+    else
+      p There are no stock of this car in the inventory.
