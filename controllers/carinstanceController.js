@@ -1,5 +1,7 @@
 const CarInstance = require("../models/carInstance");
+const Car = require("../models/car");
 const asyncHandler = require("express-async-handler");
+const { body, validationResult } = require("express-validator");
 
 // Display list of all carinstance.
 exports.carinstance_list = asyncHandler(async (req, res, next) => {
@@ -50,13 +52,56 @@ exports.carinstance_detail = asyncHandler(async (req, res, next) => {
 
 // Display carinstance create form on GET.
 exports.carinstance_create_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance create GET");
+  const allCars = await Car.find({}, "name").exec();
+
+  res.render("carinstance_form", {
+    title: "Create Car Instance",
+    car_list: allCars,
+  });
 });
 
 // Handle carinstance create on POST.
-exports.carinstance_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance create POST");
-});
+exports.carinstance_create_post = [
+  // Validate and sanitize fields.
+  body("car", "Car must be specified").trim().isLength({ min: 1 }).escape(),
+  body("production_date", "Invalid production date").isISO8601().toDate(),
+  body("sold_date", "Invalid sold date")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a BookInstance object with escaped and trimmed data.
+    const carInstance = new CarInstance({
+      car: req.body.car,
+      production_date: req.body.production_date,
+      sold_date: req.body.sold_date,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors.
+      // Render form again with sanitized values and error messages.
+      const allCars = await Car.find({}, "name").exec();
+
+      res.render("carinstance_form", {
+        title: "Create Car Instance",
+        car_list: allCars,
+        selected_car: carInstance.car._id,
+        carinstance: carInstance,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid
+      await carInstance.save();
+      res.redirect(carInstance.url);
+    }
+  }),
+];
 
 // Display carinstance delete form on GET.
 exports.carinstance_delete_get = asyncHandler(async (req, res, next) => {

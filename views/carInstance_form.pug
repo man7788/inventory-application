@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1=title
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='car') Car:
+      select#book.form-control(type='select' placeholder='Select Car' name='car' required='true')
+        - car_list.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+        for car in car_list
+          option(value=car._id, selected=(selected_car==car._id.toString() ? 'selected' : false) ) #{car.name}
+    div.form-group
+      label(for='production_date') Car production date:
+      input#due_back.form-control(type='date' name='production_date' value=(undefined===carinstance ? '' : carinstance.production_date_yyyy_mm_dd))
+    div.form-group
+      label(for='sold_date') Car sold date:
+      input#due_back.form-control(type='date' name='sold_date' value=(undefined===carinstance ? '' : carinstance.sold_date_yyyy_mm_dd))
+
+    button.btn.btn-primary(type='submit') Submit
+
+  if errors
+    ul
+      for error in errors
+        li!= error.msg

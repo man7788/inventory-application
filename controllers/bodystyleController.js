@@ -1,6 +1,7 @@
 const BodyStyle = require("../models/bodyStyle");
 const Car = require("../models/car");
 const asyncHandler = require("express-async-handler");
+const { body, validationResult } = require("express-validator");
 
 // Display list of all bodystyle.
 exports.bodystyle_list = asyncHandler(async (req, res, next) => {
@@ -38,13 +39,50 @@ exports.bodystyle_detail = asyncHandler(async (req, res, next) => {
 
 // Display bodystyle create form on GET.
 exports.bodystyle_create_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle create GET");
+  res.render("bodystyle_form", { title: "Create Body Style" });
 });
 
 // Handle bodystyle create on POST.
-exports.bodystyle_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle create POST");
-});
+exports.bodystyle_create_post = [
+  // Validate and sanitize the name field.
+  body("type", "Body Style must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a genre object with escaped and trimmed data.
+    const bodystyle = new BodyStyle({ type: req.body.type });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render the form again with sanitized values/error messages.
+      res.render("bodystyle_form", {
+        title: "Create Body Style",
+        bodystyle: bodystyle,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid.
+      // Check if BodyStyle with same name already exists.
+      const bodystyleExists = await BodyStyle.findOne({
+        type: req.body.type,
+      }).exec();
+      if (bodystyleExists) {
+        // BodyStyle exists, redirect to its detail page.
+        res.redirect(bodystyleExists.url);
+      } else {
+        await bodystyle.save();
+        // New bodystyle saved. Redirect to bodystyle detail page.
+        res.redirect(bodystyle.url);
+      }
+    }
+  }),
+];
 
 // Display bodystyle delete form on GET.
 exports.bodystyle_delete_get = asyncHandler(async (req, res, next) => {

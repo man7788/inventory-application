@@ -29,5 +29,13 @@ CarInstanceSchema.virtual("sold_date_formatted").get(function () {
   return DateTime.fromJSDate(this.sold_date).toLocaleString(DateTime.DATE_MED);
 });
 
+CarInstanceSchema.virtual("production_date_yyyy_mm_dd").get(function () {
+  return DateTime.fromJSDate(this.production_date).toISODate(); // format 'YYYY-MM-DD'
+});
+
+CarInstanceSchema.virtual("sold_date_yyyy_mm_dd").get(function () {
+  return DateTime.fromJSDate(this.sold_date).toISODate(); // format 'YYYY-MM-DD'
+});
+
 // Export model
 module.exports = mongoose.model("CarInstance", CarInstanceSchema);
