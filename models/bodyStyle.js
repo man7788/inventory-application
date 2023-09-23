@@ -3,12 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const BodyStyleSchema = new Schema({
-  type: {
-    type: String,
-    required: true,
-    enum: ["Sedan", "Coupe", "Convertable", "Hatchback"],
-    default: "Sedan",
-  },
+  type: { type: String, required: true },
 });
 
 // Virtual for BodyType's URL
