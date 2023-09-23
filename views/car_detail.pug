@@ -20,7 +20,7 @@ block content
       else 
         p.text-danger Sold
       p #[strong Production Date:] #{val.production_date_formatted}
-      if val.sold_date!==undefined
+      if val.sold_date
         p #[strong Sold Date:] #{val.sold_date_formatted}
       p #[strong Id: ]
         a(href=val.url) #{val._id}
