@@ -94,12 +94,47 @@ exports.manufacturer_create_post = [
 
 // Display manufacturer delete form on GET.
 exports.manufacturer_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Manufacturer delete GET");
+  // Get details of manufacturer and all their cars (in parallel)
+  const [manufacturer, allCarsByManufacturer] = await Promise.all([
+    Manufacturer.findById(req.params.id).exec(),
+    Car.find({ manufacturer: req.params.id }, "name manufacturer")
+      .populate("manufacturer")
+      .exec(),
+  ]);
+
+  if (manufacturer === null) {
+    // No results.
+    res.redirect("/catalog/manufacturers");
+  }
+
+  res.render("manufacturer_delete", {
+    title: "Delete Manufacturer",
+    manufacturer: manufacturer,
+    manufacturer_cars: allCarsByManufacturer,
+  });
 });
 
 // Handle manufacturer delete on POST.
 exports.manufacturer_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Manufacturer delete POST");
+  // Get details of manufacturer and all their cars (in parallel)
+  const [manufacturer, allCarsByManufacturer] = await Promise.all([
+    Manufacturer.findById(req.params.id).exec(),
+    Car.find({ manufacturer: req.params.id }, "name manufacturer").exec(),
+  ]);
+
+  if (allCarsByManufacturer.length > 0) {
+    // Manufacturer has cars. Render in same way as for GET route.
+    res.render("manufacturer_delete", {
+      title: "Delete Manufacturer",
+      manufacturer: manufacturer,
+      manufacturer_cars: allCarsByManufacturer,
+    });
+    return;
+  } else {
+    // Manufacturer has no cars. Delete object and redirect to the list of manufacturer.
+    await Manufacturer.findByIdAndRemove(req.body.manufacturerid);
+    res.redirect("/catalog/manufacturers");
+  }
 });
 
 // Display manufacturer update form on GET.

@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  h1 #{title}: #{car.name}
+  h3 #{car.manufacturer.name} - #{car.body_style.type}
+
+  if car_carinstances.length
+
+    p #[strong Delete the following car instances before attempting to delete this car.]
+
+    div(style='margin-left:20px;margin-top:20px')
+
+      h4 Cars Instances
+
+      dl
+      each instance in car_carinstances
+        hr
+        dt
+          span id: 
+          a(href=instance.url) #{instance._id}
+        dd Production Date: #{instance.production_date_formatted}
+        if instance.sold_date
+          dd Sold Date: #{instance.sold_date_formatted}
+
+  else
+    p Do you really want to delete this Car?
+
+    form(method='POST' action='')
+      div.form-group
+        input#authorid.form-control(type='hidden',name='carid', required='true', value=car._id )
+
+      button.btn.btn-primary(type='submit') Delete

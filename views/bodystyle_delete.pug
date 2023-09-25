@@ -1,0 +1,27 @@
+extends layout
+
+block content
+  h1 #{title}: #{bodystyle.type}
+
+  if bodystyle_cars.length
+
+    p #[strong Delete the following cars before attempting to delete this body style.]
+
+    div(style='margin-left:20px;margin-top:20px')
+
+      h4 Cars
+
+      dl
+      each car in bodystyle_cars
+        dt
+          a(href=car.url) #{car.name}
+        dd (#{car.manufacturer.name}) - #{car.body_style.type}
+
+  else
+    p Do you really want to delete this Manufacturer?
+
+    form(method='POST' action='')
+      div.form-group
+        input#authorid.form-control(type='hidden',name='bodystyleid', required='true', value=bodystyle._id )
+
+      button.btn.btn-primary(type='submit') Delete

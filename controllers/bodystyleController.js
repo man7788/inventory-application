@@ -86,12 +86,51 @@ exports.bodystyle_create_post = [
 
 // Display bodystyle delete form on GET.
 exports.bodystyle_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle delete GET");
+  // Get details of bodystyle and all their cars (in parallel)
+  const [bodystyle, allCarsByBodyStyle] = await Promise.all([
+    BodyStyle.findById(req.params.id).exec(),
+    Car.find({ body_style: req.params.id }, "name manufacturer body_style")
+      .populate("manufacturer")
+      .populate("body_style")
+      .exec(),
+  ]);
+
+  if (bodystyle === null) {
+    // No results.
+    res.redirect("/catalog/manufacturers");
+  }
+
+  res.render("bodystyle_delete", {
+    title: "Delete Body Style",
+    bodystyle: bodystyle,
+    bodystyle_cars: allCarsByBodyStyle,
+  });
 });
 
 // Handle bodystyle delete on POST.
 exports.bodystyle_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle delete POST");
+  // Get details of bodystyle and all their cars (in parallel)
+  const [bodystyle, allCarsByBodyStyle] = await Promise.all([
+    BodyStyle.findById(req.params.id).exec(),
+    Car.find(
+      { body_style: req.params.id },
+      "name manufacturer body_style"
+    ).exec(),
+  ]);
+
+  if (allCarsByBodyStyle.length > 0) {
+    // Bodystyle has cars. Render in same way as for GET route.
+    res.render("bodystyle_delete", {
+      title: "Delete Body Style",
+      bodystyle: bodystyle,
+      bodystyle_cars: allCarsByBodyStyle,
+    });
+    return;
+  } else {
+    // Manufacturer has no cars. Delete object and redirect to the list of manufacturer.
+    await BodyStyle.findByIdAndRemove(req.body.bodystyleid);
+    res.redirect("/catalog/bodystyles");
+  }
 });
 
 // Display bodystyle update form on GET.

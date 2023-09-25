@@ -18,3 +18,7 @@ block content
       span.text-success Available
     else
       span  Sold - #{carinstance.sold_date_formatted}
+
+  hr
+  p
+    a(href=carinstance.url+'/delete') Delete car instance

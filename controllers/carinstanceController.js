@@ -105,12 +105,28 @@ exports.carinstance_create_post = [
 
 // Display carinstance delete form on GET.
 exports.carinstance_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance delete GET");
+  // Get details of carinstance
+  const carinstance = await CarInstance.findById(req.params.id).exec();
+
+  if (carinstance === null) {
+    // No results.
+    res.redirect("/catalog/carinstances");
+  }
+
+  res.render("carinstance_delete", {
+    title: "Delete Car Instance",
+    carinstance: carinstance,
+  });
 });
 
 // Handle carinstance delete on POST.
 exports.carinstance_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance delete POST");
+  // Get details of carinstance
+  const carinstance = await CarInstance.findById(req.params.id).exec();
+
+  //Delete carinstance and redirect to the list of carinstances.
+  await CarInstance.findByIdAndRemove(req.body.carinstanceid);
+  res.redirect("/catalog/carinstances");
 });
 
 // Display carinstance update form on GET.

@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 #{title}: #{carinstance._id}
+  h3 Production Date: #{carinstance.production_date_formatted}
+  if carinstance.sold_date 
+    h3 Sold Date: #{carinstance.sold_date_formatted}
+
+  p Do you really want to delete this Car Instance?
+
+  form(method='POST' action='')
+    div.form-group
+      input#authorid.form-control(type='hidden',name='carinstanceid', required='true', value=carinstance._id )
+
+    button.btn.btn-primary(type='submit') Delete

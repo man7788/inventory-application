@@ -138,12 +138,48 @@ exports.car_create_post = [
 
 // Display car delete form on GET.
 exports.car_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Car delete GET");
+  // Get details of car and all their car instances (in parallel)
+  const [car, allInstancesByCar] = await Promise.all([
+    Car.findById(req.params.id)
+      .populate("manufacturer")
+      .populate("body_style")
+      .exec(),
+    CarInstance.find({ car: req.params.id }).exec(),
+  ]);
+
+  if (car === null) {
+    // No results.
+    res.redirect("/catalog/cars");
+  }
+
+  res.render("car_delete", {
+    title: "Delete Car",
+    car: car,
+    car_carinstances: allInstancesByCar,
+  });
 });
 
 // Handle car delete on POST.
 exports.car_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Car delete POST");
+  // Get details of car and all their car instances (in parallel)
+  const [car, allInstancesByCar] = await Promise.all([
+    Car.findById(req.params.id).exec(),
+    CarInstance.find({ car: req.params.id }).exec(),
+  ]);
+
+  if (allInstancesByCar.length > 0) {
+    // Car has car instances. Render in same way as for GET route.
+    res.render("car_delete", {
+      title: "Delete Car",
+      car: car,
+      car_carinstances: allInstancesByCar,
+    });
+    return;
+  } else {
+    // Car has no car instance. Delete object and redirect to the list of cars.
+    await Car.findByIdAndRemove(req.body.carid);
+    res.redirect("/catalog/cars");
+  }
 });
 
 // Display car update form on GET.
