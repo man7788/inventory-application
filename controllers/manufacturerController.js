@@ -139,10 +139,66 @@ exports.manufacturer_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display manufacturer update form on GET.
 exports.manufacturer_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Manufacturer update GET");
+  // Get manufacturer for form.
+  const manufacturer = await Manufacturer.findById(req.params.id).exec();
+
+  if (manufacturer === null) {
+    // No results.
+    const err = new Error("Manufacturer not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("manufacturer_form", {
+    title: "Update Manufacturer",
+    manufacturer: manufacturer,
+  });
 });
 
 // Handle manufacturer update on POST.
-exports.manufacturer_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Manufacturer update POST");
-});
+exports.manufacturer_update_post = [
+  // Validate and sanitize fields.
+  body("name", "Manufacturer must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("origin", "Origin must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Manufacturer object with escaped and trimmed data.
+    const manufacturer = new Manufacturer({
+      name: req.body.name,
+      origin: req.body.origin,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all manufacturer for form.
+      const manufacturer = await Manufacturer.findById(req.params.id).exec();
+
+      res.render("manufacturer_form", {
+        title: "Update Manufacturer",
+        manufacturer: manufacturer,
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedManufacturer = await Manufacturer.findByIdAndUpdate(
+        req.params.id,
+        manufacturer,
+        {}
+      );
+      // Redirect to manufacturer detail page.
+      res.redirect(updatedManufacturer.url);
+    }
+  }),
+];

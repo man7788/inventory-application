@@ -2,6 +2,8 @@ extends layout
 
 block content
   h1= title
+  if car 
+    h3 Car: #{car.name}
 
   form(method='POST' action='')
     div.form-group
@@ -28,21 +30,7 @@ block content
     div.form-group
       label(for='price') Price:
       input#title.form-control(type='number', placeholder='Price of car' name='price' required='true' value=(undefined===car ? '' : car.price) )
-      
 
-    //- div.form-group
-    //-   label(for='summary') Summary:
-    //-   textarea#summary.form-control(type='textarea', placeholder='Summary' name='summary' required='true') #{undefined===book ? '' : book.summary}
-    //- div.form-group
-    //-   label(for='isbn') ISBN:
-    //-   input#isbn.form-control(type='text', placeholder='ISBN13' name='isbn' value=(undefined===book ? '' : book.isbn) required='true')
-    //- div.form-group
-    //-   label Genre:
-    //-   div
-    //-     for genre in genres
-    //-       div(style='display: inline; padding-right:10px;')
-    //-         input.checkbox-input(type='checkbox', name='genre', id=genre._id, value=genre._id, checked=genre.checked )
-    //-         label(for=genre._id) #{genre.name}
     button.btn.btn-primary(type='submit') Submit
 
   if errors

@@ -135,10 +135,64 @@ exports.bodystyle_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display bodystyle update form on GET.
 exports.bodystyle_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle update GET");
+  // Get bodystyle for form.
+  const bodystyle = await BodyStyle.findById(req.params.id).exec();
+
+  if (bodystyle === null) {
+    // No results.
+    const err = new Error("Body Style not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("bodystyle_form", {
+    title: "Update Body Style",
+    bodystyle: bodystyle,
+  });
 });
 
 // Handle bodystyle update on POST.
-exports.bodystyle_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BodyStyle update POST");
-});
+exports.bodystyle_update_post = [
+  // Validate and sanitize the name field.
+  body("type", "Body Style must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a BodyStyle object with escaped and trimmed data.
+
+    const bodystyle = new BodyStyle({
+      type: req.body.type,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all manufacturers and bodystyles for form.
+      // Get bodystyle for form.
+      const bodystyle = await BodyStyle.findById(req.params.id).exec();
+
+      res.render("bodystyle_form", {
+        title: "Update Body Style",
+        bodystyle: bodystyle,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedBodyStyle = await BodyStyle.findByIdAndUpdate(
+        req.params.id,
+        bodystyle,
+        {}
+      );
+      // Redirect to bodystyle detail page.
+      res.redirect(updatedBodyStyle.url);
+    }
+  }),
+];

@@ -184,10 +184,85 @@ exports.car_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display car update form on GET.
 exports.car_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Car update GET");
+  // Get cars, manufacturers and bodystyles for form.
+  const [car, allManufacturers, allBodyStyles] = await Promise.all([
+    Car.findById(req.params.id)
+      .populate("manufacturer")
+      .populate("body_style")
+      .exec(),
+    Manufacturer.find().exec(),
+    BodyStyle.find().exec(),
+  ]);
+
+  if (car === null) {
+    // No results.
+    const err = new Error("Car not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("car_form", {
+    title: "Update Car",
+    manufacturers: allManufacturers,
+    bodystyles: allBodyStyles,
+    car: car,
+  });
 });
 
 // Handle car update on POST.
-exports.car_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Car update POST");
-});
+exports.car_update_post = [
+  // Validate and sanitize fields.
+  body("name", "Name must not be empty.").trim().isLength({ min: 1 }).escape(),
+  body("manufacturer", "Manufacturer must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("bodystyle", "Body Style must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("price", "Price must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .isNumeric()
+    .escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Car object with escaped and trimmed data.
+    const car = new Car({
+      name: req.body.name,
+      manufacturer: req.body.manufacturer,
+      body_style: req.body.bodystyle,
+      price: req.body.price,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all manufacturers and bodystyles for form.
+      const [allManufacturers, allBodyStyles] = await Promise.all([
+        Manufacturer.find().exec(),
+        BodyStyle.find().exec(),
+      ]);
+
+      res.render("car_form", {
+        title: "Update Car",
+        car: car,
+        manufacturers: allManufacturers,
+        bodystyles: allBodyStyles,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedCar = await Car.findByIdAndUpdate(req.params.id, car, {});
+      // Redirect to car detail page.
+      res.redirect(updatedCar.url);
+    }
+  }),
+];

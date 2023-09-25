@@ -131,10 +131,77 @@ exports.carinstance_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display carinstance update form on GET.
 exports.carinstance_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance update GET");
+  // Get carinstances, cars for form.
+  const [carInstance, allCars] = await Promise.all([
+    CarInstance.findById(req.params.id).populate("car").exec(),
+    Car.find().exec(),
+  ]);
+
+  if (carInstance === null) {
+    // No results.
+    const err = new Error("Car Instance not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("carinstance_form", {
+    title: "Update Car Instance",
+    carinstance: carInstance,
+    car_list: allCars,
+    selected_car: carInstance.car._id,
+  });
 });
 
 // Handle carinstance update on POST.
-exports.carinstance_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: CarInstance update POST");
-});
+exports.carinstance_update_post = [
+  // Validate and sanitize fields.
+  body("car", "Car must be specified").trim().isLength({ min: 1 }).escape(),
+  body("production_date", "Invalid production date").isISO8601().toDate(),
+  body("sold_date", "Invalid sold date")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a BookInstance object with escaped and trimmed data.
+    const carInstance = new CarInstance({
+      car: req.body.car,
+      production_date: req.body.production_date,
+      sold_date: req.body.sold_date,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all manufacturers and bodystyles for form.
+      // Get carinstances, cars for form.
+      const [carInstance, allCars] = await Promise.all([
+        CarInstance.findById(req.params.id).populate("car").exec(),
+        Car.find().exec(),
+      ]);
+
+      res.render("carinstance_form", {
+        title: "Update Car Instance",
+        carinstance: carInstance,
+        car_list: allCars,
+        selected_car: carInstance.car._id,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedCarInstance = await CarInstance.findByIdAndUpdate(
+        req.params.id,
+        carInstance,
+        {}
+      );
+      // Redirect to car detail page.
+      res.redirect(updatedCarInstance.url);
+    }
+  }),
+];
